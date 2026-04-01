@@ -22,7 +22,9 @@ buddy-shelter forks [any-buddy](https://github.com/cpaczek/any-buddy) and adds t
 
 ## Screenshots / 截图
 
-> *(GIF 演示录制中… / Recording in progress…)*
+![演示 GIF](docs/动图.gif)
+
+![截图](docs/图.JPG)
 
 ---
 
