@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="terminal" baseProfile="full" viewBox="0 0 720 716" width="720" version="1.1">
+    <defs>
+        <termtosvg:template_settings xmlns:termtosvg="https://github.com/nbedos/termtosvg">
+            <termtosvg:screen_geometry columns="90" rows="42"/>
+            <termtosvg:animation type="css"/>
+        </termtosvg:template_settings>
+        <style type="text/css" id="generated-style"><![CDATA[#screen {
+                font-family: 'DejaVu Sans Mono', monospace;
+                font-style: normal;
+                font-size: 14px;
+            }
+
+        text {
+            dominant-baseline: text-before-edge;
+            white-space: pre;
+        }
+    ]]></style>
+        <style type="text/css" id="user-style">
+            /* The colors defined below are the default 16 colors used for rendering text of the terminal. Adjust
+               them as needed.
+               PowerShell colors based on https://en.wikipedia.org/wiki/ANSI_escape_code#Colors */
+            .foreground {fill: #cccccc;}
+            .background {fill: #0c0c0c;}
+            .color0 {fill: #0c0c0c;}
+            .color1 {fill: #c50f1f;}
+            .color2 {fill: #13a10e;}
+            .color3 {fill: #c19c00;}
+            .color4 {fill: #0037da;}
+            .color5 {fill: #881798;}
+            .color6 {fill: #3a96dd;}
+            .color7 {fill: #cccccc;}
+            .color8 {fill: #767676;}
+            .color9 {fill: #e74856;}
+            .color10 {fill: #16c60c;}
+            .color11 {fill: #f9f1a5;}
+            .color12 {fill: #3b78ff;}
+            .color13 {fill: #b4009e;}
+            .color14 {fill: #61d6d6;}
+            .color15 {fill: #f2f2f2;}
+        </style>
+    </defs>
+    <svg id="screen" width="720" height="714" viewBox="0 0 720 714" preserveAspectRatio="xMidYMin slice">
+    <rect class="background" height="100%" width="100%" x="0" y="0"/><defs><g id="g1"><text x="0" textLength="240" class="foreground">  User ID: d6242b55-d9f9-43...</text></g><g id="g2"><text x="0" textLength="312" class="color2">  Your current default pet: mushroom &#9733;&#9733;</text></g><g id="g3"><text x="0" textLength="400" class="color2">  Rarity: uncommon  Eyes: &#176;  Hat: crown  Shiny: no</text></g><g id="g4"><text x="0" textLength="128" class="color2">       \^^^/    </text></g><g id="g5"><text x="0" textLength="128" class="color2">     .-o-OO-o-. </text></g><g id="g6"><text x="0" textLength="128" class="color2">    (__________)</text></g><g id="g7"><text x="0" textLength="128" class="color2">       |&#176;  &#176;|   </text></g><g id="g8"><text x="0" textLength="128" class="color2">       |____|   </text></g><g id="g9"><text x="0" textLength="176" font-weight="bold" class="foreground">  Choose your new pet:</text></g><g id="g10"><text x="0" textLength="32" class="color2">  &#10004; </text><text x="32" textLength="64" font-weight="bold" class="foreground">Species </text><text x="96" textLength="48" class="color6">dragon</text></g><g id="g11"><text x="0" textLength="32" class="color2">  &#10004; </text><text x="32" textLength="64" font-weight="bold" class="foreground">Eyes    </text><text x="96" textLength="8" class="color6">&#10022;</text></g><g id="g12"><text x="0" textLength="32" class="color2">  &#10004; </text><text x="32" textLength="64" font-weight="bold" class="foreground">Rarity  </text><text x="96" textLength="232" class="color6">legendary &#9733;&#9733;&#9733;&#9733;&#9733; (normally 1%)</text></g><g id="g13"><text x="0" textLength="32" class="color2">  &#10004; </text><text x="32" textLength="64" font-weight="bold" class="foreground">Hat     </text><text x="96" textLength="48" class="color6">wizard</text></g><g id="g14"><text x="0" textLength="240" class="color3">  Your selection: dragon &#9733;&#9733;&#9733;&#9733;&#9733;</text></g><g id="g15"><text x="0" textLength="416" class="color3">  Rarity: legendary  Eyes: &#10022;  Hat: wizard  Shiny: no</text></g><g id="g16"><text x="0" textLength="128" class="color3">        /^\     </text></g><g id="g17"><text x="0" textLength="128" class="color3">      /^\  /^\  </text></g><g id="g18"><text x="0" textLength="128" class="color3">     &lt;  &#10022;  &#10022;  &gt; </text></g><g id="g19"><text x="0" textLength="128" class="color3">     (   ~~   ) </text></g><g id="g20"><text x="0" textLength="128" class="color3">      `-vvvv-&#180;  </text></g><g id="g21"><text x="0" textLength="32" class="color2">  &#10004; </text><text x="32" textLength="256" class="foreground">Find a matching salt and apply? </text><text x="288" textLength="24" class="color6">Yes</text></g><g id="g22"><text x="0" textLength="256" class="foreground">  Searching for matching salt...</text></g><g id="g23"><text x="0" textLength="448" class="color2">  Found salt "VZ-ROzXwLZNVAYK" in 40,488 attempts (22ms)</text></g><g id="g24"><text x="0" textLength="32" class="color2">  &#10004; </text><text x="32" textLength="112" class="foreground">Patch binary? </text><text x="144" textLength="24" class="color6">Yes</text></g><g id="g25"><text x="0" textLength="328" class="color2">  Patched! 3 replacements, verified: true</text></g><g id="g26"><text x="0" textLength="480" class="foreground">  Backup: ~/.local/share/claude/versions/2.1.89.anybuddy-bak</text></g><g id="g27"><text x="0" textLength="32" class="color2">  &#10004; </text><text x="32" textLength="464" class="foreground">Install SessionStart hook to auto-re-apply after updates? </text><text x="496" textLength="24" class="color6">Yes</text></g><g id="g28"><text x="0" textLength="344" class="color2">  Hook installed in ~/.claude/settings.json</text></g><g id="g29"><text x="0" textLength="496" font-weight="bold" class="color10">  Done! Launch Claude Code and run /buddy to see your new pet.</text></g><g id="g30"><text x="0" textLength="8" class="background"> </text></g></defs><g><use xlink:href="#g1" y="17"/><use xlink:href="#g2" y="51"/><use xlink:href="#g3" y="68"/><use xlink:href="#g4" y="102"/><use xlink:href="#g5" y="119"/><use xlink:href="#g6" y="136"/><use xlink:href="#g7" y="153"/><use xlink:href="#g8" y="170"/><use xlink:href="#g9" y="204"/><use xlink:href="#g10" y="238"/><use xlink:href="#g11" y="255"/><use xlink:href="#g12" y="272"/><use xlink:href="#g13" y="289"/><use xlink:href="#g14" y="323"/><use xlink:href="#g15" y="340"/><use xlink:href="#g16" y="374"/><use xlink:href="#g17" y="391"/><use xlink:href="#g18" y="408"/><use xlink:href="#g19" y="425"/><use xlink:href="#g20" y="442"/><use xlink:href="#g21" y="476"/><use xlink:href="#g22" y="493"/><use xlink:href="#g23" y="510"/><use xlink:href="#g24" y="544"/><use xlink:href="#g25" y="561"/><use xlink:href="#g26" y="578"/><use xlink:href="#g27" y="612"/><use xlink:href="#g28" y="629"/><use xlink:href="#g29" y="663"/><rect x="0" y="697" width="8" height="17" class="foreground"/><use xlink:href="#g30" y="697"/></g></svg>
+</svg>

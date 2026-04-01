@@ -1,0 +1,88 @@
+#!/usr/bin/env node
+
+import { runInteractive, runPreview, runCurrent, runApply, runRestore } from '../lib/tui.mjs';
+
+function parseArgs(argv) {
+  const args = argv.slice(2);
+  const flags = {};
+  const positional = [];
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === '--species' || arg === '-s') { flags.species = args[++i]; }
+    else if (arg === '--rarity' || arg === '-r') { flags.rarity = args[++i]; }
+    else if (arg === '--eye' || arg === '-e') { flags.eye = args[++i]; }
+    else if (arg === '--hat' || arg === '-t') { flags.hat = args[++i]; }
+    else if (arg === '--name' || arg === '-n') { flags.name = args[++i]; }
+    else if (arg === '--silent') { flags.silent = true; }
+    else if (arg === '--no-hook') { flags.noHook = true; }
+    else if (arg === '--yes' || arg === '-y') { flags.yes = true; }
+    else if (!arg.startsWith('-')) { positional.push(arg); }
+  }
+
+  return { command: positional[0], flags };
+}
+
+const { command, flags } = parseArgs(process.argv);
+
+try {
+  switch (command) {
+    case 'apply':
+      await runApply({ silent: flags.silent });
+      break;
+    case 'preview':
+      await runPreview(flags);
+      break;
+    case 'current':
+      await runCurrent();
+      break;
+    case 'restore':
+      await runRestore();
+      break;
+    case 'help':
+      printHelp();
+      break;
+    default:
+      if (command === '--help' || command === '-h') { printHelp(); break; }
+      await runInteractive(flags);
+      break;
+  }
+} catch (err) {
+  if (err.name === 'ExitPromptError') {
+    process.exit(0);
+  }
+  console.error(err.message);
+  process.exit(1);
+}
+
+function printHelp() {
+  console.log(`
+claude-code-any-buddy — Pick any Claude Code companion pet
+
+Usage:
+  claude-code-any-buddy                          Interactive pet picker
+  claude-code-any-buddy --species dragon         Skip species prompt
+  claude-code-any-buddy -s cat -r legendary -e ✦ -t wizard -y
+                                                 Fully non-interactive
+  claude-code-any-buddy preview                  Browse pets without applying
+  claude-code-any-buddy current                  Show your current pet
+  claude-code-any-buddy apply [--silent]         Re-apply saved pet after update
+  claude-code-any-buddy restore                  Restore original pet
+
+Options:
+  -s, --species <name>   Species (duck, goose, blob, cat, dragon, octopus, owl,
+                         penguin, turtle, snail, ghost, axolotl, capybara,
+                         cactus, robot, rabbit, mushroom, chonk)
+  -r, --rarity <level>   Rarity (common, uncommon, rare, epic, legendary)
+  -e, --eye <char>       Eye style (· ✦ × ◉ @ °)
+  -t, --hat <name>       Hat (none, crown, tophat, propeller, halo, wizard,
+                         beanie, tinyduck)
+  -n, --name <name>      Rename your companion
+  -y, --yes              Skip confirmation prompts
+  --no-hook              Don't offer to install the SessionStart hook
+  --silent               Suppress output (for apply command in hooks)
+
+Environment:
+  CLAUDE_BINARY          Path to Claude Code binary (auto-detected by default)
+`);
+}
