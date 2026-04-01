@@ -1,280 +1,131 @@
-# Claude Code Any Buddy
-⚠️ Not tested on Windows, if claude session does not start after using this tool use the restore command or you may need to reinstall claude code. I have tested this on linux and mac and seems to work well
+# buddy-shelter
 
-Feel free to open a windows PR if you know what the issue is
+**你用 any-buddy 换了新 buddy，但原来那只也想留着。**  
+*You swapped to a new buddy with any-buddy — but the original one wanted to stay.*
 
-Pick any Claude Code companion pet you want.
+buddy-shelter forks [any-buddy](https://github.com/cpaczek/any-buddy) and adds two things: an automatic backup of your original Claude Code companion before any patch is applied, and a desktop pet window so you can keep both alive at the same time.
 
-```bash
-npx any-buddy@latest
-```
+---
 
-That's it. Follow the prompts to choose your species, rarity, eyes, hat, and name.
+## Features / 功能
 
-Claude Code assigns you a deterministic pet based on your account ID — you can't change it through normal means. This tool lets you choose your own species, rarity, eyes, and hat, then patches the Claude Code binary to make it happen.
-
-<p align="center">
-  <img src="assets/demo.svg" alt="Demo of any-buddy" width="700">
-</p>
-
-## How it works
-
-Claude Code's companion system generates your pet's visual traits (species, rarity, eyes, hat) by hashing your user ID with a salt string (`friend-2026-401`), then feeding that hash into a deterministic PRNG (Mulberry32). The result is always the same pet for the same user — and it's recalculated on every launch, so you can't override it through config files.
-
-**any-buddy** works by:
-
-1. **You pick** your desired species, rarity, eyes, and hat through an interactive TUI
-2. **Brute-force search** finds a replacement salt string that produces your chosen pet when combined with your real user ID (typically takes <100ms)
-3. **Binary patch** replaces the salt in the compiled Claude Code binary (all 3 occurrences) using an atomic rename, with a backup created first
-4. **Auto-repair hook** (optional) installs a `SessionStart` hook in `~/.claude/settings.json` that re-applies the patch after Claude Code updates
-
-The patch is safe — it uses `rename()` to atomically swap the binary, which is the same technique package managers use. A running Claude session continues using the old binary in memory; the new pet appears on next launch.
-
-## Requirements
-
-- **Node.js >= 18** — for the CLI and TUI
-- **Bun** — required for hash computation (Claude Code uses `Bun.hash`/wyhash internally; FNV-1a produces different results). Bun is typically already installed if you have Claude Code
-- **Claude Code** — installed via any standard method
-
-### Platform support
-
-| Platform | Status | Binary location (auto-detected) |
-|---|---|---|
-| Linux | Tested | `~/.local/share/claude/versions/<ver>` |
-| macOS | Tested | `~/.local/bin/claude`, `/opt/homebrew/bin/claude`, `~/.claude/local/claude` |
-| Windows | Should work | `%LOCALAPPDATA%\Programs\claude\claude.exe`, npm global shim |
-
-The binary is found automatically via `which`/`where` and platform-specific known paths. If auto-detection fails, set `CLAUDE_BINARY=/path/to/binary` manually.
-
-## Install
-
-The interactive flow also lets you **rename** your companion — it edits `~/.claude.json` directly so the name change takes effect immediately.
-
-## Install
-
-```bash
-# Clone and install
-git clone https://github.com/cpaczek/any-buddy.git
-cd any-buddy
-pnpm install
-
-# Link globally (optional, enables the apply command for auto-patch hook)
-pnpm link --global
-```
-
-Or via npm:
-
-```bash
-npm install -g any-buddy
-```
-
-## Usage
-
-```bash
-# Interactive pet picker (default) — pick your pet and apply
-any-buddy
-
-# Show your current pet
-any-buddy current
-
-# Browse and preview pets without applying
-any-buddy preview
-
-# Re-apply saved pet after a Claude Code update
-any-buddy apply
-
-# Silent re-apply (used by the SessionStart hook)
-any-buddy apply --silent
-
-# Restore original pet
-any-buddy restore
-
-# Delete companion so Claude Code re-hatches a fresh one on next /buddy
-any-buddy rehatch
-
-# Non-interactive with flags (skip prompts you already know the answer to)
-any-buddy --species dragon --rarity legendary --eye '✦' --hat wizard --name Draco --yes
-```
-
-### CLI flags
-
-| Flag | Short | Description |
-|---|---|---|
-| `--species <name>` | `-s` | Pre-select species |
-| `--rarity <level>` | `-r` | Pre-select rarity |
-| `--eye <char>` | `-e` | Pre-select eye style |
-| `--hat <name>` | `-t` | Pre-select hat |
-| `--name <name>` | `-n` | Rename your companion |
-| `--personality <desc>` | `-p` | Set companion personality (controls speech bubble tone) |
-| `--yes` | `-y` | Skip all confirmation prompts |
-| `--shiny` | | Require shiny variant (~100x longer search) |
-| `--peak <stat>` | | Best stat: DEBUGGING, PATIENCE, CHAOS, WISDOM, or SNARK |
-| `--dump <stat>` | | Worst stat (~20x longer search with both) |
-| `--no-hook` | | Don't offer to install the auto-patch hook |
-| `--silent` | | Suppress output (for `apply` in hooks) |
-
-Any flag you don't provide will be prompted interactively.
-
-### Current pet
-
-<p align="center">
-  <img src="assets/current.svg" alt="Current pet display" width="500">
-</p>
-
-## All species
-
-There are **18 companion species**. Each has 3 animation frames for idle fidget, and eyes/hats are applied as overlays.
-
-<p align="center">
-  <img src="assets/species.svg" alt="All 18 species" width="700">
-</p>
-
-```
-duck        goose       blob        cat         dragon      octopus
-    __           (·>       .----.      /\_/\      /^\  /^\     .----.
-  <(· )___       ||      ( ·  · )   ( ·   ·)   <  ·  ·  >   ( ·  · )
-   (  ._>      _(__)_    (      )   (  ω  )    (   ~~   )   (______)
-    `--´        ^^^^      `----´    (")_(")     `-vvvv-´    /\/\/\/\
-
-owl         penguin     turtle      snail       ghost       axolotl
-   /\  /\    .---.       _,--._    ·    .--.     .----.   }~(______)~{
-  ((·)(·))   (·>·)      ( ·  · )    \  ( @ )   / ·  · \  }~(· .. ·)~{
-  (  ><  )  /(   )\    /[______]\    \_`--´    |      |    ( .--. )
-   `----´    `---´      ``    ``    ~~~~~~~    ~`~``~`~    (_/  \_)
-
-capybara    cactus      robot       rabbit      mushroom    chonk
-  n______n   n  ____  n    .[||].     (\__/)    .-o-OO-o-.   /\    /\
- ( ·    · )  | |·  ·| |  [ ·  · ]   ( ·  · )  (__________)  ( ·    · )
- (   oo   )  |_|    |_|  [ ==== ]  =(  ..  )=    |·  ·|     (   ..   )
-  `------´     |    |     `------´   (")__(")     |____|      `------´
-```
-
-## Customization options
-
-<p align="center">
-  <img src="assets/options.svg" alt="Customization options" width="700">
-</p>
-
-### Rarities
-
-| Rarity | Stars | Normal odds | Stat floor |
-|---|---|---|---|
-| Common | ★ | 60% | 5 |
-| Uncommon | ★★ | 25% | 15 |
-| Rare | ★★★ | 10% | 25 |
-| Epic | ★★★★ | 4% | 35 |
-| Legendary | ★★★★★ | 1% | 50 |
-
-Common rarity pets get no hat. All other rarities roll a random hat.
-
-### Eyes
-
-Six eye styles available on every species:
-
-| Style | Character |
+| | |
 |---|---|
-| Dot | `·` |
-| Sparkle | `✦` |
-| Cross | `×` |
-| Circle | `◉` |
-| At | `@` |
-| Degree | `°` |
+| 🗄️ **原始 buddy 自动备份** | 每次运行前静默写入 `~/.buddy-shelter/original.json`，后悔的路永远开着 |
+| 🖥️ **桌宠双模式** | ASCII 终端风格 · 像素精灵风格，右键随时切换 |
+| 💬 **AI 对话** | 接入 Claude Sonnet 4.6，buddy 用自己的性格和属性值回复 |
+| 📵 **离线降级** | 无 API key 时自动用预设语句池，不报错不卡顿 |
+| ⏰ **定时唠叨** | 每 15–30 分钟随机冒一句话（按属性条件筛选） |
+| ↩️ **完全向后兼容** | any-buddy 所有原有命令不变，buddy-shelter 是超集 |
 
-### Hats
+---
 
-Seven hat styles (only for uncommon+ rarity):
+## Screenshots / 截图
 
-```
-crown       tophat      propeller   halo        wizard      beanie      tinyduck
- \^^^/       [___]        -+-       (   )        /^\        (___)         ,>
-```
+> *(GIF 演示录制中… / Recording in progress…)*
 
-### Stats
+---
 
-Each pet has 5 stats: **DEBUGGING**, **PATIENCE**, **CHAOS**, **WISDOM**, **SNARK**. One peak stat, one dump stat, rest scattered. Higher rarity = higher stat floor. Stats are deterministic from the seed — you can't pick them individually, but different salts produce different stat rolls.
-
-### Shiny
-
-1% chance per seed. The interactive flow asks if you want shiny, or pass `--shiny` on the command line. Requiring shiny takes ~100x longer to find a matching salt (seconds instead of milliseconds) since only 1 in 100 seeds produce a shiny pet.
-
-## How the auto-patch hook works
-
-When you choose to install the hook, it adds this to `~/.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "any-buddy apply --silent"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-The hook is **optional and defaults to No** — you'll be asked during the interactive flow. If you prefer, just run `any-buddy apply` manually after Claude Code updates.
-
-On every Claude Code session start, this runs `apply --silent` which:
-1. Reads your saved salt from `~/.any-buddy.json`
-2. Checks if the current binary already has the correct salt (fast `Buffer.indexOf`)
-3. If not (Claude updated), re-patches — same string replacement, same logic
-4. Silent mode: produces no output unless a patch was actually applied
-
-The hook adds negligible startup time (~50ms) when no patch is needed.
-
-## How the binary patch works
-
-Claude Code is a compiled Bun binary (ELF on Linux, Mach-O on macOS) at `~/.local/share/claude/versions/<version>` (Linux) or the path shown by `which claude`. The salt string `"friend-2026-401"` appears exactly 3 times:
-- 2 occurrences in the bundled JavaScript code sections
-- 1 occurrence in a string table / data section
-
-The patch:
-1. Reads the binary into a buffer
-2. Finds all 3 occurrences of the old salt
-3. Replaces each with the new salt (always exactly 15 characters — same length, no byte offset shifts)
-4. Writes to a temp file, then atomically renames it over the original
-5. Verifies by re-reading
-6. On macOS, re-signs the binary with an ad-hoc signature (`codesign --force --sign -`)
-
-The atomic rename (`rename()` syscall) is safe even while Claude Code is running — the OS keeps the old inode open for any running process. The new binary takes effect on next launch.
-
-A backup is always created at `<binary-path>.anybuddy-bak` before the first patch.
-
-## Files
-
-| File | Purpose |
-|---|---|
-| `~/.claude.json` | Read-only — your user ID is read from here |
-| `~/.claude-code-any-buddy.json` | Stores your chosen salt and pet config (legacy name kept for compatibility) |
-| `~/.claude/settings.json` | SessionStart hook is added here (optional) |
-| `<binary>.anybuddy-bak` | Backup of the original binary |
-
-## Restoring
+## Installation / 安装
 
 ```bash
-# Restore original pet and remove the hook
-any-buddy restore
+# 1. 克隆仓库 / Clone
+git clone https://github.com/yankehang0-beep/any-buddy buddy-shelter
+cd buddy-shelter
+
+# 2. 安装 CLI 依赖 / Install CLI deps
+pnpm install   # or npm install
+
+# 3. 安装桌宠 Electron 依赖（仅桌宠功能需要）
+#    Install Electron deps (only needed for the desktop pet)
+cd desktop && npm install && cd ..
+
+# 4. 全局链接（可选）/ Link globally (optional)
+npm link
 ```
 
-This patches the salt back to the original, removes the SessionStart hook, and clears the saved config.
+---
 
-## Limitations
+## Usage / 使用
 
-- **Tested on Linux and macOS** — on macOS, the binary is automatically ad-hoc re-signed after patching to avoid code signature invalidation. Windows should work but is not yet tested. Please [open an issue](https://github.com/cpaczek/any-buddy/issues) if you hit problems
-- **Requires Bun** — needed for matching Claude Code's wyhash implementation
-- **Salt string dependent** — if Anthropic changes the salt from `friend-2026-401` in a future version, the patch logic would need updating (but the tool will detect this and warn you)
-- **Stats partially selectable** — you can pick which stat is highest (peak) and lowest (dump), but not exact values
-- **Personality** — generated by Claude on first `/buddy` run after patching, not controlled by this tool. Delete the `companion` key from `~/.claude.json` to re-hatch with a new personality
-- **Speech bubble** — your buddy's speech bubble reactions are generated by Claude based on the personality and name stored in `~/.claude.json`. After patching the visual, the buddy will still *talk* like the original personality unless you update it. Use the interactive prompt or `--personality "your description here"` to change what your buddy says
-- **Name** — can be changed at any time via the interactive flow or `--name` flag (edits `~/.claude.json` directly)
+### CLI 命令
+
+```bash
+# ── any-buddy 原有命令（完全不变）/ Original any-buddy commands (unchanged) ──
+any-buddy                        # 交互式选宠 / Interactive pet picker
+any-buddy --species cactus -r epic -y
+any-buddy preview                # 预览，不应用 / Preview without applying
+any-buddy current                # 查看当前宠物 / Show current pet
+any-buddy apply                  # 重新应用已保存配置 / Re-apply saved config
+any-buddy restore                # 恢复原始 salt / Restore original salt
+any-buddy rehatch                # 删除 companion，重新孵化 / Re-hatch companion
+
+# ── buddy-shelter 新增命令 / New commands ──
+buddy-shelter                    # 运行主流程（自动备份）/ Main flow (auto-backup)
+buddy-shelter original           # 查看备份的原始 buddy / Show backed-up original
+buddy-shelter summon             # 启动桌宠窗口 / Launch desktop pet
+buddy-shelter dismiss            # 关闭桌宠窗口 / Close desktop pet
+```
+
+### 对话 / Chat
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+buddy-shelter summon
+# 点击桌宠 → 输入框弹出 → Enter 发送
+# Click the pet → input box appears → Enter to send
+```
+
+无 API key 时自动降级为预设语句，完全正常使用。  
+*Without an API key the pet falls back to offline preset phrases — no errors.*
+
+### 数据文件 / Data files
+
+| Path | Content |
+|---|---|
+| `~/.buddy-shelter/original.json` | 原始 buddy 完整数据（bones + soul） |
+| `~/.buddy-shelter/config.json`   | 桌宠偏好（模式、窗口位置） |
+| `~/.buddy-shelter/app.log`       | 桌宠运行日志（调试用） |
+
+---
+
+## How It Works
+
+buddy-shelter hooks into `runInteractive` and recomputes your original buddy's full bones using the Mulberry32 PRNG (same algorithm as Claude Code, seeded with `userId + 'friend-2026-401'`). It reads the companion soul (name, personality) from `~/.claude.json`. **This data is always saved silently, regardless of what the user chooses next.** The normal any-buddy flow then proceeds unchanged.
+
+The desktop pet is an independent Electron process — transparent, frameless, always-on-top — and has no effect on Claude Code's operation.
+
+---
+
+## Development
+
+```
+buddy-shelter/
+├── bin/cli.mjs              # CLI entry (extends any-buddy)
+├── lib/
+│   ├── shelter.mjs          # Original buddy backup / read
+│   └── tui.mjs              # summon / dismiss / original commands
+├── desktop/                 # Electron desktop pet
+│   ├── main.js              # Main process (window, tray, API, idle timer)
+│   ├── preload.js           # IPC bridge
+│   └── renderer/
+│       ├── index.html
+│       ├── app.js           # Render logic (dual mode + bubble + input)
+│       ├── sprites.js       # ASCII sprite data
+│       └── pixel-sprites.js # Pixel sprite data (from buddy-reveal)
+└── package.json
+```
+
+---
+
+## Acknowledgements / 致谢
+
+- Fork of [cpaczek/any-buddy](https://github.com/cpaczek/any-buddy) — MIT License
+- Pixel sprite system inspired by [yankehang0-beep/buddy-reveal](https://github.com/yankehang0-beep/buddy-reveal)
+- Built on [Claude Code](https://claude.ai/code)'s companion system
+
+---
 
 ## License
 
-MIT
+MIT — same as the original any-buddy.

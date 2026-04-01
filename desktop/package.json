@@ -1,0 +1,15 @@
+{
+  "name": "buddy-shelter-desktop",
+  "version": "0.1.0",
+  "description": "buddy-shelter 桌宠窗口",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^35.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.81.0"
+  }
+}

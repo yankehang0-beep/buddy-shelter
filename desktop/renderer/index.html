@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      background: transparent;
+      overflow: hidden;
+      -webkit-app-region: drag;
+      user-select: none;
+    }
+
+    /* ═══ 气泡 ═══ */
+    #bubble {
+      position: absolute;
+      top: 8px;
+      left: 14px;
+      right: 14px;
+      background: rgba(18, 18, 18, 0.93);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-family: 'Fira Code', 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+      font-size: 11.5px;
+      line-height: 1.55;
+      color: #dde0e6;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      z-index: 10;
+      -webkit-app-region: no-drag;
+      max-height: 82px;
+      overflow: hidden;
+    }
+    /* 小三角：指向下方（指向精灵） */
+    #bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -7px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 7px solid rgba(18,18,18,0.93);
+    }
+    #bubble.visible { opacity: 1; }
+
+    /* 打字机光标 */
+    #bubble-text::after {
+      content: '▋';
+      font-size: 10px;
+      opacity: 0;
+      animation: blink-cursor 0.7s step-end infinite;
+    }
+    #bubble-text.typing::after { opacity: 1; }
+    @keyframes blink-cursor { 50% { opacity: 1; } }
+
+    /* ═══ 精灵区域（top:100px 留气泡空间）═══ */
+    #sprite-area {
+      position: absolute;
+      top: 100px;
+      left: 0;
+      right: 0;
+    }
+
+    /* ASCII 模式 */
+    #ascii-view {
+      width: 240px;
+    }
+    #ascii-panel {
+      background: #111111;
+      border: 1px solid #272727;
+      border-radius: 10px;
+      width: 240px;
+      height: 148px;
+      padding: 10px 14px 8px 14px;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
+      cursor: pointer;
+      -webkit-app-region: no-drag;
+    }
+    pre#ascii-sprite {
+      font-family: 'Fira Code', 'JetBrains Mono', 'SF Mono', 'Menlo', 'Courier New', monospace;
+      font-size: 11px;
+      line-height: 1.4;
+      white-space: pre;
+      color: #cccccc;
+      display: block;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 1px,
+        rgba(0,0,0,0.07) 1px, rgba(0,0,0,0.07) 2px
+      );
+    }
+    #ascii-name {
+      margin-top: 6px;
+      font-family: 'Fira Code', 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+      font-size: 10px;
+      color: #444;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    pre#ascii-sprite.rare      { text-shadow: 0 0 6px rgba(66,165,245,0.4); }
+    pre#ascii-sprite.epic      { text-shadow: 0 0 8px rgba(186,104,200,0.5); }
+    pre#ascii-sprite.legendary { text-shadow: 0 0 12px rgba(255,213,79,0.65); }
+
+    /* 像素模式 */
+    #pixel-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding-top: 6px;
+      cursor: pointer;
+      -webkit-app-region: no-drag;
+    }
+    #pixel-canvas {
+      width: 160px;
+      height: 160px;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      display: block;
+    }
+    #pixel-info { text-align: center; }
+    #pixel-name {
+      font-family: 'Fira Code', 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.04em;
+    }
+    #pixel-stats {
+      margin-top: 3px;
+      font-family: 'Fira Code', 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+      font-size: 9px;
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* ═══ 输入框 ═══ */
+    #input-area {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 38px;
+      background: rgba(14, 14, 14, 0.92);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      border-radius: 0 0 8px 8px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 6px;
+      display: none;
+      -webkit-app-region: no-drag;
+    }
+    #chat-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: 'Fira Code', 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+      font-size: 11px;
+      color: #d0d6e0;
+      caret-color: #5fa845;
+    }
+    #chat-close {
+      font-size: 14px;
+      color: #444;
+      cursor: pointer;
+      line-height: 1;
+      padding: 2px 4px;
+    }
+    #chat-close:hover { color: #888; }
+  </style>
+</head>
+<body>
+  <!-- 语音气泡（绝对定位，top:8px） -->
+  <div id="bubble">
+    <span id="bubble-text"></span>
+  </div>
+
+  <!-- 精灵区域（绝对定位，top:100px） -->
+  <div id="sprite-area">
+    <!-- ASCII 模式 -->
+    <div id="ascii-view">
+      <div id="ascii-panel">
+        <pre id="ascii-sprite">loading...</pre>
+        <div id="ascii-name"></div>
+      </div>
+    </div>
+
+    <!-- 像素模式（初始隐藏） -->
+    <div id="pixel-view" style="display:none;">
+      <canvas id="pixel-canvas"></canvas>
+      <div id="pixel-info">
+        <div id="pixel-name"></div>
+        <div id="pixel-stats"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 输入框（绝对定位，bottom:0） -->
+  <div id="input-area">
+    <input id="chat-input" type="text" placeholder="和 buddy 说点什么..." autocomplete="off" spellcheck="false">
+    <span id="chat-close" title="关闭">✕</span>
+  </div>
+
+  <script src="sprites.js"></script>
+  <script src="pixel-sprites.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

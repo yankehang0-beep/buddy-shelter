@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { runInteractive, runPreview, runCurrent, runApply, runRestore, runRehatch } from '../lib/tui.mjs';
+import { runInteractive, runPreview, runCurrent, runApply, runRestore, runRehatch, runOriginal, runSummon, runDismiss } from '../lib/tui.mjs';
 
 function parseArgs(argv) {
   const args = argv.slice(2);
@@ -45,6 +45,18 @@ try {
       break;
     case 'rehatch':
       await runRehatch();
+      break;
+    case 'original':
+      // buddy-shelter 专属命令：展示备份的原始buddy
+      await runOriginal();
+      break;
+    case 'summon':
+      // 启动桌宠 Electron 窗口
+      await runSummon();
+      break;
+    case 'dismiss':
+      // 关闭桌宠窗口
+      await runDismiss();
       break;
     case 'help':
       printHelp();
