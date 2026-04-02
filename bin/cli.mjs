@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { runInteractive, runPreview, runCurrent, runApply, runRestore, runRehatch, runOriginal, runSummon, runDismiss } from '../lib/tui.mjs';
+import { runInteractive, runPreview, runCurrent, runApply, runRestore, runRehatch, runOriginal, runSummon, runDismiss, runMirror } from '../lib/tui.mjs';
 
 function parseArgs(argv) {
   const args = argv.slice(2);
@@ -57,6 +57,10 @@ try {
     case 'dismiss':
       // 关闭桌宠窗口
       await runDismiss();
+      break;
+    case 'mirror':
+      // v0.2.0: 镜像模式 — pty 包裹 claude，宠物同步显示 buddy 气泡
+      await runMirror();
       break;
     case 'help':
       printHelp();

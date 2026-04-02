@@ -5,10 +5,12 @@ const path = require('path');
 const fs   = require('fs');
 const os   = require('os');
 
-const SHELTER_DIR  = path.join(os.homedir(), '.buddy-shelter');
-const SHELTER_FILE = path.join(SHELTER_DIR, 'original.json');
-const CONFIG_FILE  = path.join(SHELTER_DIR, 'config.json');
-const PID_FILE     = path.join(SHELTER_DIR, 'pet.pid');
+const SHELTER_DIR    = path.join(os.homedir(), '.buddy-shelter');
+const SHELTER_FILE   = path.join(SHELTER_DIR, 'original.json');
+const CURRENT_FILE   = path.join(SHELTER_DIR, 'mirror-current.json');
+const CONFIG_FILE    = path.join(SHELTER_DIR, 'config.json');
+const PID_FILE       = path.join(SHELTER_DIR, 'pet.pid');
+const MIRROR_PORT_FILE = path.join(SHELTER_DIR, 'mirror.port');
 
 const TRAY_ICON_B64 = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAFklEQVR4nGPQjZIjCTGMahjVMHw1AADI1KUB3x7N/AAAAABJRU5ErkJggg==';
 
@@ -177,6 +179,74 @@ function loadBuddyData() {
   try { return JSON.parse(fs.readFileSync(SHELTER_FILE, 'utf-8')); } catch { return null; }
 }
 
+// ── Mirror mode: 读取镜像端口 & 当前 buddy 数据 ──
+function loadMirrorPort() {
+  try { return parseInt(fs.readFileSync(MIRROR_PORT_FILE, 'utf-8').trim(), 10); } catch { return null; }
+}
+
+function loadCurrentBuddy() {
+  try { return JSON.parse(fs.readFileSync(CURRENT_FILE, 'utf-8')); } catch { return null; }
+}
+
+// 把 mirror-current.json 的 companion 结构适配成 { bones, soul } 格式
+// mirror-current.json 中 companion = { name, personality, hatchedAt, bones }
+// main.js 其余代码期望                { bones: {...}, soul: { name, personality } }
+function adaptCurrentBuddy(raw) {
+  if (!raw) return null;
+  const companion = raw.companion;
+  if (!companion?.bones) return null;
+  return {
+    bones: companion.bones,
+    soul: {
+      name:        companion.name        ?? null,
+      personality: companion.personality ?? null,
+    },
+  };
+}
+
+// ── Mirror WebSocket 客户端 ──
+let mirrorWs     = null;
+let mirrorPortCached = null;
+
+function connectMirrorWs(port) {
+  if (mirrorWs && mirrorWs.readyState <= 1) return;  // already open/connecting
+  const WebSocket = require('ws');
+  mirrorPortCached = port;
+  const url = `ws://127.0.0.1:${port}`;
+  log('[mirror] connecting to', url);
+
+  const ws = new WebSocket(url);
+  mirrorWs = ws;
+
+  ws.on('open', () => log('[mirror] WS connected'));
+  ws.on('error', (e) => log('[mirror] WS error:', e.message));
+  ws.on('close', () => {
+    log('[mirror] WS closed');
+    mirrorWs = null;
+    // Retry after 5s if port file still exists
+    setTimeout(() => {
+      const p = loadMirrorPort();
+      if (p) connectMirrorWs(p);
+    }, 5000);
+  });
+
+  ws.on('message', (data) => {
+    try {
+      const raw = data.toString();
+      log('[mirror] ws message raw:', raw.slice(0, 120));
+      const msg = JSON.parse(raw);
+      log('[mirror] ws message parsed: type=%s win=%s visible=%s', msg.type, !!win, win ? win.isVisible() : 'n/a');
+      if (msg.type === 'bubble' && win && win.isVisible()) {
+        log('[mirror] bubble received:', msg.text);
+        win.webContents.send('idle-message', msg.text);
+        log('[mirror] idle-message sent to renderer');
+      }
+    } catch (e) {
+      log('[mirror] ws message error:', e.message);
+    }
+  });
+}
+
 // ── 模式切换 ──
 function switchMode(mode) {
   const cfg = loadConfig();
@@ -254,6 +324,9 @@ ipcMain.handle('chat-send', async (_event, message) => {
   return await handleChat(message);
 });
 
+// 渲染进程查询当前镜像端口（null = shelter 模式）
+ipcMain.handle('get-mirror-port', () => mirrorPortCached ?? null);
+
 // ── 启动 ──
 app.whenReady().then(() => {
   fs.mkdirSync(SHELTER_DIR, { recursive: true });
@@ -262,7 +335,36 @@ app.whenReady().then(() => {
       '| ANTHROPIC_API_KEY set:', !!process.env.ANTHROPIC_API_KEY,
       '| platform:', process.platform);
 
-  buddyData = loadBuddyData();
+  // 检测镜像模式（mirror.port 文件存在 → mirror-current.json 作为数据源）
+  const mirrorPort = loadMirrorPort();
+  if (mirrorPort) {
+    log('[startup] mirror mode detected, port:', mirrorPort);
+    const current  = loadCurrentBuddy();
+    const original = loadBuddyData();
+    const adapted  = adaptCurrentBuddy(current);
+    if (adapted) {
+      buddyData = adapted;
+    } else if (original && current?.companion) {
+      // mirror-current.json 只含 soul（name/personality），没有 bones
+      // 用 original.json 的 bones + mirror-current.json 的 soul 合并
+      buddyData = {
+        ...original,
+        soul: {
+          name:        current.companion.name        ?? original?.soul?.name        ?? null,
+          personality: current.companion.personality ?? original?.soul?.personality ?? null,
+        },
+      };
+      log('[startup] mirror: merged soul from mirror-current + bones from original');
+    } else {
+      buddyData = original;
+    }
+    log('[startup] mirror buddy:', buddyData?.bones?.species ?? 'none',
+        '| name:', buddyData?.soul?.name ?? 'none');
+    connectMirrorWs(mirrorPort);
+  } else {
+    buddyData = loadBuddyData();
+  }
+
   const cfg  = loadConfig();
   const mode = cfg.mode || 'ascii';
   if (!fs.existsSync(CONFIG_FILE)) saveConfig({ mode });
@@ -271,7 +373,7 @@ app.whenReady().then(() => {
 
   createTray(buddyData, mode);
   createWindow(buddyData, mode);
-  startIdleTimer();
+  if (!mirrorPort) startIdleTimer();  // idle timer only in shelter mode
 });
 
 app.on('window-all-closed', () => {});

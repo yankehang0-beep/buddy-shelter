@@ -3,7 +3,7 @@
 **你用 any-buddy 换了新 buddy，但原来那只也想留着。**  
 *You swapped to a new buddy with any-buddy — but the original one wanted to stay.*
 
-buddy-shelter forks [any-buddy](https://github.com/cpaczek/any-buddy) and adds two things: an automatic backup of your original Claude Code companion before any patch is applied, and a desktop pet window so you can keep both alive at the same time.
+buddy-shelter forks [any-buddy](https://github.com/cpaczek/any-buddy) and adds: an automatic backup of your original Claude Code companion, a desktop pet window, and a **mirror mode** that syncs the pet with your live Claude Code session in real time.
 
 ---
 
@@ -17,6 +17,7 @@ buddy-shelter forks [any-buddy](https://github.com/cpaczek/any-buddy) and adds t
 | 📵 **离线降级** | 无 API key 时自动用预设语句池，不报错不卡顿 |
 | ⏰ **定时唠叨** | 每 15–30 分钟随机冒一句话（按属性条件筛选） |
 | ↩️ **完全向后兼容** | any-buddy 所有原有命令不变，buddy-shelter 是超集 |
+| 🪞 **镜像模式** | `buddy-shelter mirror` 包裹 `claude`，buddy 在桌宠里实时说话 |
 
 ---
 
@@ -65,8 +66,9 @@ any-buddy rehatch                # 删除 companion，重新孵化 / Re-hatch co
 # ── buddy-shelter 新增命令 / New commands ──
 buddy-shelter                    # 运行主流程（自动备份）/ Main flow (auto-backup)
 buddy-shelter original           # 查看备份的原始 buddy / Show backed-up original
-buddy-shelter summon             # 启动桌宠窗口 / Launch desktop pet
+buddy-shelter summon             # 启动桌宠窗口（显示原始 buddy）/ Launch desktop pet (original buddy)
 buddy-shelter dismiss            # 关闭桌宠窗口 / Close desktop pet
+buddy-shelter mirror             # 镜像模式：包裹 claude，宠物实时同步 / Mirror mode: wrap claude, pet syncs live
 ```
 
 ### 对话 / Chat
@@ -85,9 +87,11 @@ buddy-shelter summon
 
 | Path | Content |
 |---|---|
-| `~/.buddy-shelter/original.json` | 原始 buddy 完整数据（bones + soul） |
-| `~/.buddy-shelter/config.json`   | 桌宠偏好（模式、窗口位置） |
-| `~/.buddy-shelter/app.log`       | 桌宠运行日志（调试用） |
+| `~/.buddy-shelter/original.json`    | 原始 buddy 完整数据（bones + soul） |
+| `~/.buddy-shelter/mirror-current.json` | 镜像模式：当前 buddy 快照 |
+| `~/.buddy-shelter/mirror.port`      | 镜像模式：WS 服务器端口（进程退出后删除） |
+| `~/.buddy-shelter/config.json`      | 桌宠偏好（模式、窗口位置） |
+| `~/.buddy-shelter/app.log`          | 桌宠运行日志（调试用） |
 
 ---
 

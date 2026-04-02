@@ -29,6 +29,7 @@ var pixelCtx = pixelCanvas.getContext('2d');
 // ── 状态 ──
 var buddyData   = null;
 var currentMode = 'ascii';
+var isMirrorMode = false;
 var bubbleDismissTimer = null;
 var typewriterTimer    = null;
 var bubbleVisible      = false;
@@ -235,9 +236,16 @@ window.buddyBridge.onSetMode(function(mode) {
   applyMode(mode);
 });
 
-// 定时 idle 语句：气泡显示中或输入框打开时跳过
+// 检测 mirror 模式（port 非 null 即为 mirror）
+window.buddyBridge.getMirrorPort().then(function(port) {
+  isMirrorMode = port !== null;
+});
+
+// idle-message：idle 定时器 或 mirror WS bubble 都走这里
+// mirror 模式下来自 Claude Code 的气泡优先级高，不受 inputOpen 拦截
 window.buddyBridge.onIdleMessage(function(text) {
-  if (bubbleVisible) return;                           // 气泡已在显示
-  if (inputArea.style.display !== 'none') return;     // 用户正在输入
+  console.log('[renderer] idle-message received:', text, '| bubbleVisible:', bubbleVisible, '| inputVisible:', inputArea.style.display, '| mirror:', isMirrorMode);
+  if (bubbleVisible) { console.log('[renderer] skipped: bubble already visible'); return; }
+  if (!isMirrorMode && inputArea.style.display !== 'none') { console.log('[renderer] skipped: input open'); return; }
   showBubble(text);
 });
